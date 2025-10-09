@@ -25,7 +25,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_TWITTER_URL": "https://x.com/TheGangOnSolana",
   "VITE_SEO_SITE_NAME": "The Gang Dex",
   "VITE_SEO_SITE_DESCRIPTION": "The most notorious decentralized crypto trading platform",
-  "VITE_SEO_SITE_URL": "https://dex.orderly.network/the-gang-dex-0271/",
+  "VITE_SEO_SITE_URL": "https://dex.thegangonsol.xyz",
   "VITE_SEO_SITE_LANGUAGE": "en",
   "VITE_SEO_SITE_LOCALE": "en_US",
   "VITE_SEO_TWITTER_HANDLE": "@TheGangOnSolana",
