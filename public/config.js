@@ -18,7 +18,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_HAS_PRIMARY_LOGO": "true",
   "VITE_HAS_SECONDARY_LOGO": "true",
   "VITE_ENABLED_MENUS": "Trading,Portfolio,Markets,Leaderboard,Rewards,Vaults",
-  "VITE_CUSTOM_MENUS": "$GANG, https://pump.fun/coin/5aVznpsFJXqLLk8rbf3axKEncgDDZRodhkEAKZvUpump",
+  "VITE_CUSTOM_MENUS": "The $GANG token, https://pump.fun/coin/5aVznpsFJXqLLk8rbf3axKEncgDDZRodhkEAKZvUpump",
   "VITE_ENABLE_CAMPAIGNS": "false",
   "VITE_TELEGRAM_URL": "https://t.me/thegangonsolana",
   "VITE_DISCORD_URL": "",
