@@ -1,14 +1,8 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "@orderly.network/i18n";
-import { TradingPageProps } from "@orderly.network/trading";
-import {
-  BottomNavProps,
-  FooterProps,
-  MainNavWidgetProps,
-} from "@orderly.network/ui-scaffold";
 import { AppLogos } from "@orderly.network/react-app";
-import { OrderlyActiveIcon, OrderlyIcon } from "../components/icons/orderly";
-import { withBasePath } from "./base-path";
+import { TradingPageProps } from "@orderly.network/trading";
 import {
   PortfolioActiveIcon,
   PortfolioInactiveIcon,
@@ -23,12 +17,22 @@ import {
   cn,
 } from "@orderly.network/ui";
 import {
+  BottomNavProps,
+  FooterProps,
+  MainNavWidgetProps,
+  MainNavItem as MainNavItemType,
+} from "@orderly.network/ui-scaffold";
+import { CampaignsNavTitle } from "@/components/CampaignsNavTitle";
+import CustomLeftNav from "@/components/CustomLeftNav";
+import { OrderlyActiveIcon, OrderlyIcon } from "../components/icons/orderly";
+import { withBasePath } from "./base-path";
+import {
   getRuntimeConfig,
   getRuntimeConfigBoolean,
   getRuntimeConfigNumber,
 } from "./runtime-config";
-import { Link } from "react-router-dom";
-import CustomLeftNav from "@/components/CustomLeftNav";
+import { resolveDexThemeConfig } from "./theme-config";
+import { createTradingViewConfig } from "./trading-view-config";
 
 interface MainNavItem {
   name: string;
@@ -36,13 +40,13 @@ interface MainNavItem {
   target?: string;
 }
 
-interface ColorConfigInterface {
-  upColor?: string;
-  downColor?: string;
-  pnlUpColor?: string;
-  pnlDownColor?: string;
-  chartBG?: string;
-}
+type MenuConfigItem = {
+  id: string;
+  href: string;
+  name: string;
+  target?: string;
+  isDefault?: boolean;
+} & Pick<MainNavItemType, "customRender">;
 
 export type OrderlyConfig = {
   orderlyAppProvider: {
@@ -58,37 +62,6 @@ export type OrderlyConfig = {
     sharePnLConfig: TradingPageProps["sharePnLConfig"];
   };
 };
-
-const ALL_MENU_ITEMS = [
-  { name: "Trading", href: "/", translationKey: "common.trading" },
-  { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
-  { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
-  {
-    name: "Rewards",
-    href: "/rewards",
-    translationKey: "tradingRewards.rewards",
-  },
-  {
-    name: "Leaderboard",
-    href: "/leaderboard",
-    translationKey: "tradingLeaderboard.leaderboard",
-  },
-  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
-  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
-];
-
-const DEFAULT_ENABLED_MENUS = [
-  { name: "Trading", href: "/", translationKey: "common.trading" },
-  { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
-  { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
-  {
-    name: "Leaderboard",
-    href: "/leaderboard",
-    translationKey: "tradingLeaderboard.leaderboard",
-  },
-];
 
 const getCustomMenuItems = (): MainNavItem[] => {
   const customMenusEnv = getRuntimeConfig("VITE_CUSTOM_MENUS");
@@ -117,7 +90,7 @@ const getCustomMenuItems = (): MainNavItem[] => {
       if (!name || !href) {
         console.warn(
           "Invalid custom menu item format. Expected 'name,url':",
-          pair
+          pair,
         );
         continue;
       }
@@ -136,7 +109,10 @@ const getCustomMenuItems = (): MainNavItem[] => {
   }
 };
 
-const getEnabledMenus = () => {
+const getEnabledMenus = (
+  allMenuItems: MenuConfigItem[],
+  defaultEnabledMenus: MenuConfigItem[],
+) => {
   const enabledMenusEnv = getRuntimeConfig("VITE_ENABLED_MENUS");
 
   if (
@@ -144,26 +120,24 @@ const getEnabledMenus = () => {
     typeof enabledMenusEnv !== "string" ||
     enabledMenusEnv.trim() === ""
   ) {
-    return DEFAULT_ENABLED_MENUS;
+    return defaultEnabledMenus;
   }
 
   try {
-    const enabledMenuNames = enabledMenusEnv
-      .split(",")
-      .map((name) => name.trim());
+    const enabledMenuIds = enabledMenusEnv.split(",").map((id) => id.trim());
 
     const enabledMenus = [];
-    for (const menuName of enabledMenuNames) {
-      const menuItem = ALL_MENU_ITEMS.find((item) => item.name === menuName);
+    for (const menuId of enabledMenuIds) {
+      const menuItem = allMenuItems.find((item) => item.id === menuId);
       if (menuItem) {
         enabledMenus.push(menuItem);
       }
     }
 
-    return enabledMenus.length > 0 ? enabledMenus : DEFAULT_ENABLED_MENUS;
+    return enabledMenus.length > 0 ? enabledMenus : defaultEnabledMenus;
   } catch (e) {
     console.warn("Error parsing VITE_ENABLED_MENUS:", e);
-    return DEFAULT_ENABLED_MENUS;
+    return defaultEnabledMenus;
   }
 };
 
@@ -172,7 +146,7 @@ const getPnLBackgroundImages = (): string[] => {
 
   if (useCustomPnL) {
     const customPnLCount = getRuntimeConfigNumber(
-      "VITE_CUSTOM_PNL_POSTER_COUNT"
+      "VITE_CUSTOM_PNL_POSTER_COUNT",
     );
 
     if (isNaN(customPnLCount) || customPnLCount < 1) {
@@ -200,8 +174,8 @@ const getPnLBackgroundImages = (): string[] => {
   ];
 };
 
-const getBottomNavIcon = (menuName: string) => {
-  switch (menuName) {
+const getBottomNavIcon = (menuId: string) => {
+  switch (menuId) {
     case "Trading":
       return {
         activeIcon: <TradingActiveIcon />,
@@ -223,46 +197,137 @@ const getBottomNavIcon = (menuName: string) => {
         inactiveIcon: <MarketsInactiveIcon />,
       };
     default:
-      throw new Error(`Unsupported menu name: ${menuName}`);
-  }
-};
-
-const getColorConfig = (): ColorConfigInterface | undefined => {
-  const customColorConfigEnv = getRuntimeConfig(
-    "VITE_TRADING_VIEW_COLOR_CONFIG"
-  );
-
-  if (
-    !customColorConfigEnv ||
-    typeof customColorConfigEnv !== "string" ||
-    customColorConfigEnv.trim() === ""
-  ) {
-    return undefined;
-  }
-
-  try {
-    const customColorConfig = JSON.parse(customColorConfigEnv);
-    return customColorConfig;
-  } catch (e) {
-    console.warn("Error parsing VITE_TRADING_VIEW_COLOR_CONFIG:", e);
-    return undefined;
+      throw new Error(`Unsupported menu id: ${menuId}`);
   }
 };
 
 export const useOrderlyConfig = () => {
   const { t } = useTranslation();
   const { isMobile } = useScreen();
+  const themeConfigSource = useMemo(() => resolveDexThemeConfig().source, []);
+
+  const footerProps = useMemo<FooterProps>(
+    () => ({
+      telegramUrl: getRuntimeConfig("VITE_TELEGRAM_URL") || undefined,
+      discordUrl: getRuntimeConfig("VITE_DISCORD_URL") || undefined,
+      twitterUrl: getRuntimeConfig("VITE_TWITTER_URL") || undefined,
+      trailing: (
+        <span className="oui-text-2xs oui-text-base-contrast-54">
+          Charts powered by{" "}
+          <a
+            href="https://tradingview.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TradingView
+          </a>
+        </span>
+      ),
+    }),
+    [],
+  );
+
+  const appIcons = useMemo<AppLogos>(
+    () => ({
+      main: getRuntimeConfigBoolean("VITE_HAS_PRIMARY_LOGO")
+        ? {
+            component: (
+              <img
+                src={withBasePath("/logo.webp")}
+                alt="logo"
+                style={{ height: "42px" }}
+              />
+            ),
+          }
+        : { img: withBasePath("/orderly-logo.svg") },
+      secondary: {
+        img: getRuntimeConfigBoolean("VITE_HAS_SECONDARY_LOGO")
+          ? withBasePath("/logo-secondary.webp")
+          : withBasePath("/orderly-logo-secondary.svg"),
+      },
+    }),
+    [],
+  );
+
+  const tradingViewConfig = useMemo<TradingPageProps["tradingViewConfig"]>(
+    () => createTradingViewConfig(themeConfigSource),
+    [themeConfigSource],
+  );
+
+  const sharePnLConfig = useMemo<TradingPageProps["sharePnLConfig"]>(
+    () => ({
+      backgroundImages: getPnLBackgroundImages(),
+      color: "rgba(255, 255, 255, 0.98)",
+      profitColor: "rgba(41, 223, 169, 1)",
+      lossColor: "rgba(245, 97, 139, 1)",
+      brandColor: "rgba(255, 255, 255, 0.98)",
+      refLink:
+        typeof window !== "undefined" ? window.location.origin : undefined,
+      refSlogan:
+        getRuntimeConfig("VITE_ORDERLY_BROKER_NAME") || "Orderly Network",
+    }),
+    [],
+  );
 
   return useMemo<OrderlyConfig>(() => {
-    const enabledMenus = getEnabledMenus();
+    const allMenuItems: MenuConfigItem[] = [
+      { id: "Trading", href: "/", name: t("common.trading"), isDefault: true },
+      {
+        id: "Portfolio",
+        href: "/portfolio",
+        name: t("common.portfolio"),
+        isDefault: true,
+      },
+      {
+        id: "Markets",
+        href: "/markets",
+        name: t("common.markets"),
+        isDefault: true,
+      },
+      { id: "Swap", href: "/swap", name: t("extend.swap"), isDefault: true },
+      {
+        id: "Leaderboard",
+        href: "/leaderboard",
+        name: t("extend.tradingLeaderboard.leaderboard"),
+        isDefault: true,
+      },
+      {
+        id: "Campaigns",
+        href: "",
+        name: t("extend.tradingLeaderboard.campaigns"),
+        isDefault: true,
+        target: "_blank",
+        customRender: () => {
+          return (
+            <CampaignsNavTitle
+              title={t("extend.tradingLeaderboard.campaigns")}
+            />
+          );
+        },
+      },
+
+      { id: "Rewards", href: "/rewards", name: t("tradingRewards.rewards") },
+      { id: "Vaults", href: "/vaults", name: t("common.vaults") },
+      {
+        id: "Points",
+        href: "/points",
+        name: t("extend.tradingPoints.points"),
+      },
+    ];
+
+    const defaultEnabledMenus = allMenuItems.filter((menu) => menu.isDefault);
+
+    const enabledMenus = getEnabledMenus(allMenuItems, defaultEnabledMenus);
     const customMenus = getCustomMenuItems();
 
     const translatedEnabledMenus = enabledMenus.map((menu) => ({
-      name: t(menu.translationKey),
+      name: menu.name,
       href: menu.href,
+      target: menu.target,
+      customRender: menu.customRender,
     }));
 
-    const allMenuItems = [...translatedEnabledMenus, ...customMenus];
+    const allMainMenus = [...translatedEnabledMenus, ...customMenus];
 
     const supportedBottomNavMenus = [
       "Trading",
@@ -271,12 +336,13 @@ export const useOrderlyConfig = () => {
       "Leaderboard",
     ];
     const bottomNavMenus = enabledMenus
-      .filter((menu) => supportedBottomNavMenus.includes(menu.name))
+      .filter((menu) => supportedBottomNavMenus.includes(menu.id))
       .map((menu) => {
-        const icons = getBottomNavIcon(menu.name);
+        const icons = getBottomNavIcon(menu.id);
         return {
-          name: t(menu.translationKey),
+          name: menu.name,
           href: menu.href,
+          target: menu.target,
           ...icons,
         };
       })
@@ -284,7 +350,7 @@ export const useOrderlyConfig = () => {
 
     const mainNavProps: MainNavWidgetProps = {
       initialMenu: "/",
-      mainMenus: allMenuItems,
+      mainMenus: allMainMenus,
     };
 
     if (getRuntimeConfigBoolean("VITE_ENABLE_CAMPAIGNS")) {
@@ -351,66 +417,15 @@ export const useOrderlyConfig = () => {
         bottomNavProps: {
           mainMenus: bottomNavMenus,
         },
-        footerProps: {
-          telegramUrl: getRuntimeConfig("VITE_TELEGRAM_URL") || undefined,
-          discordUrl: getRuntimeConfig("VITE_DISCORD_URL") || undefined,
-          twitterUrl: getRuntimeConfig("VITE_TWITTER_URL") || undefined,
-          trailing: (
-            <span className="oui-text-2xs oui-text-base-contrast-54">
-              Charts powered by{" "}
-              <a
-                href="https://tradingview.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                TradingView
-              </a>
-            </span>
-          ),
-        },
+        footerProps,
       },
       orderlyAppProvider: {
-        appIcons: {
-          main: getRuntimeConfigBoolean("VITE_HAS_PRIMARY_LOGO")
-            ? {
-                component: (
-                  <img
-                    src={withBasePath("/logo.webp")}
-                    alt="logo"
-                    style={{ height: "42px" }}
-                  />
-                ),
-              }
-            : { img: withBasePath("/orderly-logo.svg") },
-          secondary: {
-            img: getRuntimeConfigBoolean("VITE_HAS_SECONDARY_LOGO")
-              ? withBasePath("/logo-secondary.webp")
-              : withBasePath("/orderly-logo-secondary.svg"),
-          },
-        },
+        appIcons,
       },
       tradingPage: {
-        tradingViewConfig: {
-          scriptSRC: withBasePath(
-            "/tradingview/charting_library/charting_library.js"
-          ),
-          library_path: withBasePath("/tradingview/charting_library/"),
-          customCssUrl: withBasePath("/tradingview/chart.css"),
-          colorConfig: getColorConfig(),
-        },
-        sharePnLConfig: {
-          backgroundImages: getPnLBackgroundImages(),
-          color: "rgba(255, 255, 255, 0.98)",
-          profitColor: "rgba(41, 223, 169, 1)",
-          lossColor: "rgba(245, 97, 139, 1)",
-          brandColor: "rgba(255, 255, 255, 0.98)",
-          // ref
-          refLink:
-            typeof window !== "undefined" ? window.location.origin : undefined,
-          refSlogan:
-            getRuntimeConfig("VITE_ORDERLY_BROKER_NAME") || "Orderly Network",
-        },
+        tradingViewConfig,
+        sharePnLConfig,
       },
     };
-  }, [t, isMobile]);
+  }, [appIcons, footerProps, isMobile, sharePnLConfig, t, tradingViewConfig]);
 };
