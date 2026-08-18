@@ -1,7 +1,7 @@
 window.__RUNTIME_CONFIG__ = {
   "VITE_DEPLOYMENT_ENV": "mainnet",
   "VITE_ORDERLY_BROKER_ID": "thegangdex",
-  "VITE_ORDERLY_BROKER_NAME": "The Gang Dex",
+  "VITE_ORDERLY_BROKER_NAME": "Black DEX",
   "VITE_BROKER_EOA_ADDRESS": "0xf6df05a617a14052207ba13858ef930a4344fcd2",
   "VITE_DISABLE_MAINNET": "false",
   "VITE_DISABLE_TESTNET": "false",
@@ -15,7 +15,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_DISABLE_EVM_WALLETS": "false",
   "VITE_DISABLE_SOLANA_WALLETS": "false",
   "VITE_WALLETCONNECT_PROJECT_ID": "",
-  "VITE_APP_NAME": "The Gang Dex",
+  "VITE_APP_NAME": "Black DEX",
   "VITE_APP_DESCRIPTION": "The most notorious decentralized crypto trading platform",
   "VITE_HAS_PRIMARY_LOGO": "true",
   "VITE_HAS_SECONDARY_LOGO": "true",
