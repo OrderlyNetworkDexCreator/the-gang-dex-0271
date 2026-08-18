@@ -25,7 +25,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_ENABLE_CAMPAIGNS": "false",
   "VITE_TELEGRAM_URL": "https://t.me/thegangonsolana",
   "VITE_DISCORD_URL": "",
-  "VITE_TWITTER_URL": "https://x.com/TheGangOnSolana",
+  "VITE_TWITTER_URL": "https://x.com/BlackDexOnline",
   "VITE_SEO_SITE_NAME": "The Gang Dex",
   "VITE_SEO_SITE_DESCRIPTION": "The most notorious decentralized crypto trading platform",
   "VITE_SEO_SITE_URL": "https://black-dex.online",
