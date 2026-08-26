@@ -2,7 +2,7 @@
   --oui-font-family: 'Manrope', sans-serif;
   --oui-color-primary: 252 186 43;
   --oui-color-primary-light: 255 156 18;
-  --oui-color-primary-darken: 196 130 8;
+  --oui-color-primary-darken: 176 123 32;
   --oui-color-primary-contrast: 255 255 255;
   --oui-color-link: 143 103 43;
   --oui-color-link-light: 185 205 255;
@@ -27,11 +27,11 @@
   --oui-color-base-2: 70 91 125;
   --oui-color-base-3: 56 75 105;
   --oui-color-base-4: 46 64 92;
-  --oui-color-base-5: 13 13 13;
+  --oui-color-base-5: 18 18 18;
   --oui-color-base-6: 20 20 20;
   --oui-color-base-7: 18 18 18;
-  --oui-color-base-8: 6 10 10;
-  --oui-color-base-9: 15 14 14;
+  --oui-color-base-8: 13 13 13;
+  --oui-color-base-9: 0 0 0;
   --oui-color-base-10: 15 15 15;
   --oui-color-base-foreground: 255 255 255;
   --oui-color-line: 255 255 255;
