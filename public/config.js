@@ -11,7 +11,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_PRIVY_APP_ID": "cmtmpy3uc01380cl492fytzbq",
   "VITE_PRIVY_LOGIN_METHODS": "email,passkey,google,twitter",
   "VITE_PRIVY_TERMS_OF_USE": "",
-  "VITE_ENABLE_ABSTRACT_WALLET": "false",
+  "VITE_ENABLE_ABSTRACT_WALLET": "true",
   "VITE_DISABLE_EVM_WALLETS": "false",
   "VITE_DISABLE_SOLANA_WALLETS": "false",
   "VITE_WALLETCONNECT_PROJECT_ID": "",
